@@ -1,14 +1,21 @@
 from django.shortcuts import render,redirect
 from django.contrib.auth.decorators import login_required
-from .models import Like,Post
+from .models import Like,Post,Comment
 from django.contrib import messages
+from post.models import Notification
+from rest_framework.views import APIView 
+from rest_framework.response import Response
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import IsAuthenticated
+from .serializers import NotificationSerializer 
+#notification serializer
 # Create your views here.
 def home(request):
     return render(request, 'pages/home.html')
 
 @login_required
 def home_veiw(request):
-    post=request.objects.all().order_by('-created_at')
+    post=Post.objects.all().order_by('-created_at')
     like_obj=Like.objects.filter(user=request.user)
     user_like=like_obj.values_list('post_id',flat=True)
     context={
@@ -59,3 +66,65 @@ def delete_post(request,post_id):
 #def like_post
 @login_required
 def like_post(request,post_id):
+    if request.method=="POST":
+        post=Post.objects.get(id=post_id)
+        like_instance=Like.objects.filter(user=request.user,post=post)
+        if like_instance:
+            like_instance.delete()
+        else:
+            like_instance=Like.objects.create(user=request.user,post=post)
+        if post.auther!=request.user:  
+            Notification.objects.create(recieipent=post.author,sender=request.user,notification_type='like',post=post)
+            messages.SUCCESS(request,'like added sucessfully')
+        return redirect('home')
+    return redirect('home')
+
+@login_required
+def add_comment(request, post_id):
+    if request.method=="POST":
+        post=Post.objects.get(id=post_id)
+        content=request.POST.get('content')
+        comment=Comment.create(
+            post=post,
+            cotent=content
+        )
+        if post.author!=request.user:
+            Notification.objects.create(recieipent=post.author,sender=request.user,notification_type='comment',post=post,comment=comment)
+            messages.SUCCESS(request,'comment added sucessfully')
+        return redirect('home')
+    return redirect('home')
+
+@login_required
+def delete_comment(request,comment_id):
+    comment=Comment.objects.get(id=comment_id)
+    comment.delete()
+    messages.SUCCESS(request,'comment deleted successfully')
+    return redirect('home')
+
+
+class notification_api_view(APIView):
+    permission_classes=[IsAuthenticated]
+    def get(self,request):
+        notification=notification.objects.filter(reciepient=request.user)
+        serializer=NotificationSerializer (notification,mean=True)
+        unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+        return Response({
+            'notification':serializer.data,
+            'unread_count':unread_count,
+        })
+    
+class mark_notification_read_api_view(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(Self,request,notification_id):
+        notification=Notification.objects.get(id=notification_id)    
+        notification.is_read=True
+        notification.save()
+        return Response({'status':'sucess'})
+
+class mark_all_notification_read_api_view(APIView):
+    permission_classes=[IsAuthenticated]
+    def post(self,reques):
+        notification=Notification.objects.filter(receipeial=reques.user,is_read=False).update(is_read=True)
+        return Response({'status':'sucess'})
+        
+

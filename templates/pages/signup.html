@@ -1,0 +1,63 @@
+<!-- templates/signup.html -->
+{% extends 'components/base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h3 class="text-center">Create Account</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                        <div class="form-text">Choose a unique username</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Phone (Optional)</label>
+                        <input type="text" name="phone" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" name="dob" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Profile Photo</label>
+                        <input type="file" name="profile_photo" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                        <div class="form-text">Minimum 6 characters</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <input type="password" name="password2" class="form-control" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success">Create Account</button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p>Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

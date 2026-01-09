@@ -11,7 +11,7 @@ class Post(models.Model):
     is_edited=models.BooleanField(default=False)
 
     def __str__(self):
-        return  f"{self.username}"
+        return  f"{self.auther.username}"
 
 class Like(models.Model):
     user=models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_like')

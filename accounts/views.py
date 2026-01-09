@@ -38,11 +38,11 @@ def signup_view(request):
             password=password
             )
         login(request, user)
-        messages.SUCCESS(request,'user created sucesfully')
+        messages.success(request,'user created successfully')
         return redirect('home')
     return render(request, 'pages/signup.html')
 
-def login(request):
+def login_view(request):
     if request.user is authenticate:
         return redirect('home')
     if request.method=="POST":
@@ -51,17 +51,17 @@ def login(request):
         user=authenticate(request, username=username,password=password)
         if user is not None:
             login(request, user)
-            f"welcome back ,{user.username}"
-            return render('home')
+            messages.success(request, f"welcome back, {user.username}")
+            return redirect('home')
         else:
-            return render(login, {'error':"Invalid username and password"})
+            return render(request, 'pages/login.html', {'error':"Invalid username and password"})
     return render(request, 'pages/login.html')
 
 @login_required
 def logout_view(request):
     logout(request)
-    messages.info(request, 'logout sucessfull')
-    redirect('login')
+    messages.info(request, 'logout successful')
+    return redirect('login')
 
 @login_required
 def profile_view(request, username):
@@ -71,12 +71,12 @@ def profile_view(request, username):
     if Follow.objects.filter(follower=request.user,
                              following=profile_user).exists():
         is_following=True 
-    context={'profile_user':profile_user,'posts':posts,'is_following':is_following,'following_count':profile_user.get_following_count,'following_count':profile_user.get_followers_count}
-    return render(request,'pages/context.html',context)
+    context={'profile_user':profile_user,'posts':posts,'is_following':is_following,'following_count':profile_user.get_following_count(),'followers_count':profile_user.get_followers_count()}
+    return render(request,'components/base.html',context)
 
 @login_required
 def edit_profile_view(request):
-    return render(render,'pages/edit_pofile.hmtl')
+    return render(request,'pages/edit_profile.html')
 
 def edit_post(request, username):
     if request.method =="POST":
@@ -88,7 +88,7 @@ def edit_post(request, username):
         user.location=location
         user.profile_picture=profile_picture
         user.save()
-        messages.SUCCESS(request,'updated sucesfully')
+        messages.success(request,'updated successfully')
     return redirect('profile',username=username)
 
 
@@ -111,14 +111,14 @@ def follow_toggle(request, username):
             ).first()
         if follow_instance:
             follow_instance.delete()
-            f"you unfollow{username}"
+            messages.success(request, f"you unfollowed {username}")
         else:
-            Follow.object.create(follower=request.user,following=user_to_follow)
-            f"you follow ,{username}"
-            Notification.object.create(
+            Follow.objects.create(follower=request.user,following=user_to_follow)
+            messages.success(request, f"you followed {username}")
+            Notification.objects.create(
                 recipient=user_to_follow,
                 sender=request.user,
-                notifcation_type='follow')
+                notification_type='follow')
         return redirect('profile',username=username)
     return redirect('home')
 
