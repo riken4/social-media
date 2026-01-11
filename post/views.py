@@ -74,7 +74,7 @@ def like_post(request,post_id):
         else:
             like_instance=Like.objects.create(user=request.user,post=post)
         if post.auther!=request.user:  
-            Notification.objects.create(recieipent=post.author,sender=request.user,notification_type='like',post=post)
+            Notification.objects.create(recipient=post.auther,sender=request.user,notification_type='like',post=post)
             messages.SUCCESS(request,'like added sucessfully')
         return redirect('home')
     return redirect('home')
@@ -84,7 +84,7 @@ def add_comment(request, post_id):
     if request.method=="POST":
         post=Post.objects.get(id=post_id)
         content=request.POST.get('content')
-        comment=Comment.create(
+        comment=Comment.objects.create(
             post=post,
             cotent=content
         )
@@ -127,4 +127,14 @@ class mark_all_notification_read_api_view(APIView):
         notification=Notification.objects.filter(receipeial=reques.user,is_read=False).update(is_read=True)
         return Response({'status':'sucess'})
         
+
+
+
+#forgetpassword page
+# otp page
+# update password page
+#email otp
+# 1 page forgett.py- button click-
+# setting.py
+#reset password
 

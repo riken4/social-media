@@ -1,47 +1,126 @@
 {% extends 'components/base.html' %}
-
-{% block title %}{{ home.title }} - My Blog{% endblock %}
+{% block title %}Home{% endblock %}
 
 {% block content %}
-<div class="text-center">
-    <h1 class="display-4">Welcome, {{ user.username }}!</h1>
-    <p class="lead">You are successfully logged in.</p>
-
-    <div class="card mt-4">
-        <div class="card-body">
-            <h5 class="card-title">Your Information</h5>
-            <table class="table">
-                <tr>
-                    <th>profile picture</th>
-                    <td>
-                        {% if user.profile_photo %}
-                            <img src="{{ user.profile_photo.url }}" alt="Profile Photo" class="img-thumbnail" width="100">
-                        {% else %}
-                            No photo uploaded.
-                        {% endif %}
-                </tr>
-                <tr>
-                    <th>Username:</th>
-                    <td>{{ user.username }}</td>
-                </tr>
-                <tr>
-                    <th>Email:</th>
-                    <td>{{ user.email }}</td>
-                </tr>
-                <tr>
-                    <th>Phone:</th>
-                    <td>{{ user.phone|default:"Not set" }}</td>
-                </tr>
-                <tr>
-                    <th>Joined:</th>
-                    <td>{{ user.date_joined|date:"M d, Y" }}</td>
-                </tr>
-            </table>
-
-            <a href="" class="btn btn-primary mt-3">Update Profile</a>
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="create-post-box card">
+            <div class="card-body">
+                <form method="post" action="{% url 'create_post' %}">
+                    {% csrf_token %}
+                    <div class="d-flex gap-2">
+                        <div class="profile-pic">
+                            {{ user.username.0|upper }}
+                        </div>
+                        <div class="flex-grow-1">
+                            <textarea name="content" class="form-control border-0" 
+                                      placeholder="What's on your mind, {{ user.username }}?" 
+                                      rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <input type="url" name="image_url" class="form-control" placeholder="Image URL (optional)">
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Post</button>
+                    </div>
+                </form>
+            </div>
         </div>
+        
+        {% for post in posts %}
+        <div class="post-card card">
+    <div class="post-header">
+        <div class="profile-pic">
+            {{ post.author.username.0|upper }}
+        </div>
+        <div class="flex-grow-1">
+            <a href="" class="post-author">
+                {{ post.author.username }}
+            </a>
+            <div class="post-time">{{ post.created_at|timesince }} ago {% if post.is_edited %}(edited){% endif %}</div>
+        </div>
+        {% if post.author == user %}
+        <div class="dropdown">
+            <button class="btn btn-sm" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-h"></i>
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'edit_post' post.id %}">Edit</a></li>
+                <li>
+                    <form method="post" action="{% url 'delete_post' post.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item text-danger" 
+                                onclick="return confirm('Delete this post?')">Delete</button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="post-content">
+        {{ post.content }}
+    </div>
+    
+    {% if post.image_url %}
+    <img src="{{ post.image_url }}" class="post-image" alt="Post image">
+    {% endif %}
+    
+    <div class="post-stats">
+        <span>{{ post.total_likes }} likes</span>
+        <span>{{ post.total_comments }} comments</span>
+    </div>
+    
+    <div class="post-actions">
+        <form method="post" action="{% url 'like_post' post.id %}" style="flex:1;">
+            {% csrf_token %}
+            <button type="submit" class="action-btn {% if post.id in user_likes %}liked{% endif %}">
+                <i class="fa{% if post.id in user_likes %}s{% else %}r{% endif %} fa-heart"></i>
+                Like
+            </button>
+        </form>
+        <button class="action-btn" onclick="toggleComments({{ post.id }})">
+            <i class="far fa-comment"></i>
+            Comment
+        </button>
+    </div>
+    
+    <div class="comment-section" id="comments-{{ post.id }}" style="display:none;">
+        <form method="post" action="{% url 'add_comment' post.id %}" class="mt-2">
+            {% csrf_token %}
+            <input type="text" name="content" class="comment-input" 
+                   placeholder="Write a comment..." required>
+        </form>
+        
+        {% for comment in post.comments.all %}
+        <div class="comment-item">
+            <div class="d-flex justify-content-between">
+                <div class="flex-grow-1">
+                    <span class="comment-author">{{ comment.author.username }}</span>
+                    <div class="comment-text">{{ comment.content }}</div>
+                </div>
+                {% if comment.author == user %}
+                <form method="post" action="{% url 'delete_comment' comment.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-link text-danger" 
+                            onclick="return confirm('Delete comment?')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </div>
-
-
+        {% empty %}
+        <div class="card">
+            <div class="card-body text-center text-muted">
+                No posts yet. Be the first to post!
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
 {% endblock %}

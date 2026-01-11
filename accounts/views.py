@@ -17,13 +17,16 @@ def signup_view(request):
     if request.method=="POST":
         username=request.POST.get("username")
         email=request.POST.get("email")
+        bio=request.POST.get("bio")
+        location=request.POST.get("location")
+        profile_picture = request.FILES.get("profile_picture")
         password = request.POST.get("password")
         password2 = request.POST.get("password2")
         
         if password != password2:
             messages.error(request, "Password don't match")
             return redirect('signup')
-        
+
         if CustomUser.objects.filter(email=email).exists():
             messages.error(request, "email already exist")   
             return redirect('signup')
@@ -35,8 +38,13 @@ def signup_view(request):
         user = CustomUser.objects.create_user(
             username=username,
             email=email,
-            password=password
+            password=password,
+            bio=bio,
+            location=location,
             )
+        if profile_picture:
+            user.profile_picture = profile_picture
+            user.save()
         login(request, user)
         messages.success(request,'user created successfully')
         return redirect('home')
@@ -54,7 +62,8 @@ def login_view(request):
             messages.success(request, f"welcome back, {user.username}")
             return redirect('home')
         else:
-            return render(request, 'pages/login.html', {'error':"Invalid username and password"})
+            messages.error(request, "invalid username or password")
+            return render(request, 'pages/login.html')
     return render(request, 'pages/login.html')
 
 @login_required
@@ -83,10 +92,11 @@ def edit_post(request, username):
         user=request.user
         bio=request.POST.get("bio")
         location=request.POST.get("location")
-        profile_picture=request.FILES.get("profile_photo")
+        profile_picture=request.FILES.get("profile_picture")
         user.bio=bio
         user.location=location
-        user.profile_picture=profile_picture
+        if profile_picture:
+            user.profile_picture=profile_picture
         user.save()
         messages.success(request,'updated successfully')
     return redirect('profile',username=username)
