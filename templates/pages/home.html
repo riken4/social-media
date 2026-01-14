@@ -6,7 +6,7 @@
     <div class="col-md-8 mx-auto">
         <div class="create-post-box card">
             <div class="card-body">
-                <form method="post" action="{% url 'create_post' %}">
+                <form method="post" action="{% url 'create_post' %}" enctype="multipart/form-data">
                     {% csrf_token %}
                     <div class="d-flex gap-2">
                         <div class="profile-pic">
@@ -18,9 +18,10 @@
                                       rows="3" required></textarea>
                         </div>
                     </div>
-                    <div class="mt-2">
-                        <input type="url" name="image_url" class="form-control" placeholder="Image URL (optional)">
+                   <div class="mt-2">
+                    <input type="file" name="image_url" class="form-control">
                     </div>
+
                     <div class="mt-3">
                         <button type="submit" class="btn btn-primary">Post</button>
                     </div>
@@ -32,11 +33,17 @@
         <div class="post-card card">
     <div class="post-header">
         <div class="profile-pic">
-            {{ post.author.username.0|upper }}
+        {% if post.author.profile_picture %}
+            <a href="{% url 'profile' post.author.username %}"><img src="{{ post.author.profile_picture.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
+                </a>
+        {% else %}
+            {{ post.author.username }}
+        {% endif %}
+
         </div>
         <div class="flex-grow-1">
             <a href="" class="post-author">
-                {{ post.author.username }}
+               <a href="{% url 'profile' post.author.username %}"> {{ post.author.username }}</a>
             </a>
             <div class="post-time">{{ post.created_at|timesince }} ago {% if post.is_edited %}(edited){% endif %}</div>
         </div>
@@ -63,9 +70,9 @@
         {{ post.content }}
     </div>
     
-    {% if post.image_url %}
-    <img src="{{ post.image_url }}" class="post-image" alt="Post image">
-    {% endif %}
+        {% if post.image %}
+        <img src="{{ post.image.url }}" class="post-image" alt="Post image">
+        {% endif %}
     
     <div class="post-stats">
         <span>{{ post.total_likes }} likes</span>
@@ -74,20 +81,21 @@
     
     <div class="post-actions">
         <form method="post" action="{% url 'like_post' post.id %}" style="flex:1;">
+            
             {% csrf_token %}
             <button type="submit" class="action-btn {% if post.id in user_likes %}liked{% endif %}">
                 <i class="fa{% if post.id in user_likes %}s{% else %}r{% endif %} fa-heart"></i>
                 Like
             </button>
         </form>
-        <button class="action-btn" onclick="toggleComments({{ post.id }})">
+        <button class="action-btn" onclick="toggleComments('{{ post.id }}')">
             <i class="far fa-comment"></i>
             Comment
         </button>
     </div>
     
     <div class="comment-section" id="comments-{{ post.id }}" style="display:none;">
-        <form method="post" action="{% url 'add_comment' post.id %}" class="mt-2">
+        <form method="post" action="" class="mt-2">
             {% csrf_token %}
             <input type="text" name="content" class="comment-input" 
                    placeholder="Write a comment..." required>

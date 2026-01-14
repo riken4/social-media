@@ -1,9 +1,12 @@
 from django.db import models
 from accounts.models import CustomUser
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from accounts.models import Follow
 # Create your models here.
 
 class Post(models.Model):
-    auther=models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='post')
+    author=models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='post')
     content=models.TextField(max_length=255)
     image=models.ImageField(upload_to='post_image/',blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -11,8 +14,17 @@ class Post(models.Model):
     is_edited=models.BooleanField(default=False)
 
     def __str__(self):
-        return  f"{self.auther.username}"
-
+        return  f"{self.author.username}"
+    
+    @property
+    def total_likes(self):
+        return self.post.count()
+    
+    @property
+    def total_comments(self):
+        return self.comments.count()
+    
+  
 class Like(models.Model):
     user=models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='user_like')
     post=models.ForeignKey(Post, on_delete=models.CASCADE,related_name='post')
@@ -23,7 +35,7 @@ class Like(models.Model):
 
 
 class Comment(models.Model):
-    post=models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='comments')
+    post=models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     author=models.ForeignKey(CustomUser, on_delete=models.CASCADE,related_name='user_comments')
     content=models.TextField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -49,3 +61,10 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"{self.notification_type}"
+    
+
+# notifications
+@receiver(post_save,sender=Follow)
+def create_follow_notification(sender,instance,created,**kwargs):
+    if created:
+        Notification.objects.create(recipient=instance.following,sender=instance.follower,notification_type='follow')

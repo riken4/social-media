@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+
+
 # Create your models here.
 
 class CustomUser(AbstractUser):
@@ -24,5 +26,5 @@ class Follow(models.Model):
     created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.follower.username} follows{self.flowing}"
+        return f"{self.follower.username} follows{self.following}"
 
