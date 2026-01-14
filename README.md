@@ -40,5 +40,5 @@ A full-stack **Social Media Web Application** built using **Django** that allows
 
 ---
 
-## 📂 Project Structure
+
 
