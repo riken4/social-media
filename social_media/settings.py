@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-q(7#0^=0ooffupzf7^axw63$@6#6gwe=%m(tu(u*mmbr9glxc+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['https://riken4.pythonanywhere.com','www.riken4.pythonanywhere.com','riken4.pythonanywhere.com','http://riken4.pythonanywhere.com']
 
 
 # Application definition
