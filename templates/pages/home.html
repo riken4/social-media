@@ -83,8 +83,8 @@
         <form method="post" action="{% url 'like_post' post.id %}" style="flex:1;">
             
             {% csrf_token %}
-            <button type="submit" class="action-btn {% if post.id in user_likes %}liked{% endif %}">
-                <i class="fa{% if post.id in user_likes %}s{% else %}r{% endif %} fa-heart"></i>
+            <button type="submit" class="action-btn {% if post.id in users_likes %}liked{% endif %}">
+<i class="fa{% if post.id in users_likes %}s{% else %}r{% endif %} fa-heart"></i>
                 Like
             </button>
         </form>
@@ -95,7 +95,7 @@
     </div>
     
     <div class="comment-section" id="comments-{{ post.id }}" style="display:none;">
-        <form method="post" action="" class="mt-2">
+        <form method="post" action="{% url 'comment_post' post.id %}" class="mt-2" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="text" name="content" class="comment-input" 
                    placeholder="Write a comment..." required>

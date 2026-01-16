@@ -209,7 +209,7 @@ def comment_post(request,post_id):
     if request.method=="POST":
         post=Post.objects.get(id=post_id)
         content=request.POST.get('content')
-        comment=Comment.objects.create(post=post,content=content)
+        comment=Comment.objects.create(post=post,content=content,author=request.user)
         if post.author!=request.user:
             Notification.objects.create(recipient=post.author,sender=request.user,notification_type='comments',post=post,comment=comment)
             messages.success(request,"Comment added successfully")
