@@ -7,11 +7,10 @@
         <div class="profile-header">
             <div class="d-flex align-items-start gap-3">
                 <div class="profile-pic profile-pic-large">    
-                {% if post.author.profile_picture %}
-                    <a href="{% url 'profile' post.author.username %}"><img src="{{ post.author.profile_picture.url }}" class="rounded-circle" style="width: 40px; height: 40px; object-fit: cover;">
-                </a>
+                {% if profile_user.profile_picture %}
+                    <img src="{{ profile_user.profile_picture.url }}" class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
                 {% else %}
-                    {{ post.author.username }}
+                    <div style="width: 80px; height: 80px; background-color: #007bff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold;">{{ profile_user.username.0|upper }}</div>
                 {% endif %}
 
                 </div>
@@ -113,8 +112,8 @@
         <form method="post" action="{% url 'like_post' post.id %}" style="flex:1;">
             
             {% csrf_token %}
-            <button type="submit" class="action-btn {% if post.id in user_likes %}liked{% endif %}">
-                <i class="fa{% if post.id in user_likes %}s{% else %}r{% endif %} fa-heart"></i>
+            <button type="submit" class="action-btn {% if post.id in users_likes %}liked{% endif %}">
+                <i class="fa{% if post.id in users_likes %}s{% else %}r{% endif %} fa-heart"></i>
                 Like
             </button>
         </form>
@@ -125,7 +124,7 @@
     </div>
     
     <div class="comment-section" id="comments-{{ post.id }}" style="display:none;">
-        <form method="post" action="" class="mt-2">
+        <form method="post" action="{% url 'comment_post' post.id %}" class="mt-2">
             {% csrf_token %}
             <input type="text" name="content" class="comment-input" 
                    placeholder="Write a comment..." required>
